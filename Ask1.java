@@ -3,18 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package aski1_big_data;
+
 
 import java.io.*;
 import java.util.*;
 
-/**
- *
- * @author Χρήστος
- */
+
 public class Ask1 {
     
-    private static int min_support = 6500;
+    private int min_support;
     
     private void echo_results_to_file(String filename, TreeMap<String, Integer> data_object){
         try {
@@ -39,12 +36,18 @@ public class Ask1 {
         BufferedReader br = null;
         String basket, pair_id, triple_id;
         String[] different_items;
-        int baskets_read = 0, i, j, count;
+        int baskets_read = 0, i, j, k, count;
         TreeMap<String, Integer> product_counters = new TreeMap<String, Integer>();
         TreeMap<String, Integer> product_pair_counters = new TreeMap<String, Integer>();
         TreeMap<String, Integer> product_triple_counters = new TreeMap<String, Integer>();
         Integer t_counter, t_counter2, t_counter3;
         Ask1 ask1_object = new Ask1();
+        if(args.length < 1){
+            System.out.println("Please give min support!");
+            return;
+        }
+        ask1_object.min_support = Integer.parseInt(args[0]);
+        System.out.println("min_support: " + ask1_object.min_support);
         System.out.println("Pass 1 starts");
         try {
             br = new BufferedReader(new FileReader("baskets.txt"));
@@ -90,9 +93,9 @@ public class Ask1 {
                             t_counter2 = product_counters.get(different_items[i]);
                             t_counter3 = product_counters.get(different_items[j]);
                             if (t_counter2 != null
-                                && t_counter2 >= min_support
+                                && t_counter2 >= ask1_object.min_support
                                 && t_counter3 != null
-                                && t_counter3 >= min_support
+                                && t_counter3 >= ask1_object.min_support
                                 && !different_items[i].equals(different_items[j])) {
                                 product_pair_counters.put(pair_id, 1);
                             }
@@ -124,23 +127,25 @@ public class Ask1 {
                 different_items = basket.split(" ");
                 Arrays.sort(different_items);
                 for (i = 0, count = different_items.length; i < count - 2; i++) {
-                    pair_id = different_items[i] + '-' + different_items[i + 1];
-                    for (j = i + 2; j < count; j++) {
-                        triple_id = pair_id + '-' + different_items[j];
-                        t_counter = product_triple_counters.get(triple_id);
-                        if (t_counter == null) {
-                            t_counter2 = product_pair_counters.get(pair_id);
-                            t_counter3 = product_counters.get(different_items[j]);
-                            if (t_counter2 != null
-                                && t_counter2 >= min_support
-                                && t_counter3 != null
-                                && t_counter3 >= min_support
-                                && !different_items[i].equals(different_items[j])
-                                && !different_items[i + 1].equals(different_items[j])) {
-                                product_triple_counters.put(triple_id, 1);
+                    for (j = i + 1; j < count - 1; j++) {
+                        pair_id = different_items[i] + '-' + different_items[j];
+                        for(k = j + 1; k < count; k++){
+                            triple_id = pair_id + '-' + different_items[k];
+                            t_counter = product_triple_counters.get(triple_id);
+                            if (t_counter == null) {
+                                t_counter2 = product_pair_counters.get(pair_id);
+                                t_counter3 = product_counters.get(different_items[k]);
+                                if (t_counter2 != null
+                                    && t_counter2 >= ask1_object.min_support
+                                    && t_counter3 != null
+                                    && t_counter3 >= ask1_object.min_support
+                                    && !different_items[i].equals(different_items[k])
+                                    && !different_items[j].equals(different_items[k])) {
+                                    product_triple_counters.put(triple_id, 1);
+                                }
+                            } else {
+                                product_triple_counters.put(triple_id, t_counter + 1);
                             }
-                        } else {
-                            product_triple_counters.put(triple_id, t_counter + 1);
                         }
                     }
                 }
