@@ -114,11 +114,10 @@ void PCY_phase1(ifstream &input, unordered_map<int,int> &count_singles, bitset<n
         for(int i = 0, len = basket.size(); i < len; ++i) {
             ++count_singles[basket[i]];
             for(int j = i+1; j < len; ++j) {
-                //κάνω hash το Α*Β των id των προϊόντων για να ισχύει η αντιμεταθετική
-                //ιδιότητα στα ζευγάρια, αποφεύγω την πρόσθεση λόγω συχνότερων συγκρούσεων
-                //προφανώς δεν υπάρχει προϊόν με id = 0
-                int hash = FNV1a_hash(basket[i] * basket[j], BITS);
-                //Η δημιουργία του bit_vector προσπελαύνοντας τα hash buckets είναι ακριβή (4Μ buckets)
+                //κάνω ένα γρήγορο hash των A+B id των προϊόντων χωρίς να ακολουθήσω κάποια πολιτική hash combine,
+                //την οποία χρησιμοποιώ για τα unordered_map των ζευγαριών και τριπλετών
+                int hash = FNV1a_hash(basket[i] + basket[j], BITS);
+                //Η δημιουργία του bit_vector προσπελαύνοντας τα hash buckets είναι ακριβή (2^22 buckets)
                 //οπότε ελέγχω την συνθήκη ελάχιστης στήριξης καθώς αυξάνονται οι τιμές των buckets 
                 if(++bucket[hash] >= min_support) bit_vector.set(hash, 1);
             }
@@ -143,7 +142,7 @@ void PCY_phase2(ifstream &input, unordered_map<int,int> &count_singles, unordere
         for(int i = 0, len = basket.size(); i < len; ++i) {
             for(int j = i+1; j < len; ++j) {
                 //Η count είναι γρήγορη μέθοδος για να βρεθεί αν υπάρχει το κλειδί
-                if(count_singles.count(basket[i]) && count_singles.count(basket[j]) && bit_vector[FNV1a_hash(basket[i] * basket[j], BITS)]) {
+                if(count_singles.count(basket[i]) && count_singles.count(basket[j]) && bit_vector[FNV1a_hash(basket[i] + basket[j], BITS)]) {
 
                     //Το καλάθι είναι ταξινομημένο οπότε δεν έχω προβλήματα τύπου {22,34} !== {34,22}
                     ++count_pairs[make_tuple(basket[i], basket[j])];
