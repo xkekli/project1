@@ -175,7 +175,7 @@ void PCY_phase3(ifstream &input, unordered_map<tuple<int,int>, int> &count_pairs
     while(getbasket(input, basket)) {
         for(int i = 0, len = basket.size(); i < len; ++i) {
             for(int j = i+1; j < len; ++j) {
-                for(int k = i+2; k < len; ++k) {
+                for(int k = j+1; k < len; ++k) {
                     if(/**/count_pairs.count(make_tuple(basket[i], basket[j])) 
                         && count_pairs.count(make_tuple(basket[i], basket[k]))
                         && count_pairs.count(make_tuple(basket[j], basket[k]))) {
